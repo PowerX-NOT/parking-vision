@@ -1,17 +1,16 @@
 import argparse
 import os
 from preprocess import load_input, resize_frame
-from slot_detection import YOLOv5SlotDetector
+from slot_detection import detect_slots
 from occupancy import classify_occupancy
 from visualization import draw_results, display_frame
 
 def main(input_path):
-    detector = YOLOv5SlotDetector()
     frames = load_input(input_path)
-    is_image = os.path.splitext(input_path)[1].lower() in ['.jpg', '.png', '.jpeg']
+    is_image = os.path.splitext(input_path)[1].lower() in ['.jpg', '.png', '.jpeg', '.png']
     for frame in frames:
         frame = resize_frame(frame)
-        slots = detector.detect_slots(frame)
+        slots = detect_slots(frame)
         statuses = classify_occupancy(frame, slots)
         vis_frame = draw_results(frame.copy(), slots, statuses)
         if not display_frame(vis_frame, is_image=is_image):

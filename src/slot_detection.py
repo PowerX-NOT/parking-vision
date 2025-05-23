@@ -1,18 +1,36 @@
-import torch
+import cv2
+import numpy as np
 
-class YOLOv5SlotDetector:
-    def __init__(self, weights="yolov5s.pt", device=None):
-        self.model = torch.hub.load("ultralytics/yolov5", "custom", path=weights, force_reload=False)
-        if device:
-            self.model.to(device)
-        self.model.eval()
+def detect_slots(frame):
+    """
+    Detect cars from aerial parking lot images using classical image processing.
+    Returns a list of bounding boxes [(x, y, w, h), ...].
+    """
+    # Convert to grayscale
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    def detect_slots(self, frame):
-        results = self.model(frame)
-        slots = []
-        for *xyxy, conf, cls in results.xyxy[0].cpu().numpy():
-            if int(cls) in [2, 3, 5, 7]:  # car, motorcycle, bus, truck
-                x1, y1, x2, y2 = map(int, xyxy)
-                w, h = x2 - x1, y2 - y1
-                slots.append((x1, y1, w, h))
-        return slots
+    # Enhance contrast
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+    gray = clahe.apply(gray)
+
+    # Blur to reduce noise
+    blurred = cv2.GaussianBlur(gray, (7, 7), 0)
+
+    # Threshold to find bright regions (cars)
+    _, binary = cv2.threshold(blurred, 170, 255, cv2.THRESH_BINARY)
+
+    # Morphological operations to separate close cars
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    morphed = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel, iterations=2)
+
+    # Find contours
+    contours, _ = cv2.findContours(morphed, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    slots = []
+    for cnt in contours:
+        x, y, w, h = cv2.boundingRect(cnt)
+        area = w * h
+        aspect = w / (h + 1e-3)
+        # Heuristic for "car-like" blobs: tune these numbers for your images!
+        if 16 < w < 70 and 25 < h < 90 and 0.5 < aspect < 2.5 and area > 300:
+            slots.append((x, y, w, h))
+    return slots
