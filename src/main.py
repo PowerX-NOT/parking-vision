@@ -7,12 +7,12 @@ from visualization import draw_results, display_frame
 
 def main(input_path):
     frames = load_input(input_path)
-    is_image = os.path.splitext(input_path)[1].lower() in ['.jpg', '.png', '.jpeg', '.png']
+    is_image = os.path.splitext(input_path)[1].lower() in ['.jpg', '.png', '.jpeg']
     for frame in frames:
         frame = resize_frame(frame)
-        slots = detect_slots(frame)
-        statuses = classify_occupancy(frame, slots)
-        vis_frame = draw_results(frame.copy(), slots, statuses)
+        car_boxes = detect_slots(frame)
+        statuses = classify_occupancy(frame, car_boxes)
+        vis_frame = draw_results(frame.copy(), car_boxes, statuses)
         if not display_frame(vis_frame, is_image=is_image):
             break
         if is_image:
