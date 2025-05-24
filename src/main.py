@@ -6,7 +6,7 @@ import pickle
 import os
 
 from src.slot_selector import SlotSelector, SLOTS_PICKLE
-from src.slot_detection import YOLOv5VehicleDetector
+from src.slot_detection import YOLOv8VehicleDetector
 from src.occupancy import classify_occupancy
 from src.visualization import draw_slots, display_count
 from src.utils import get_file_type
@@ -27,7 +27,7 @@ def process_image(image_path, vehicle_detector, slots):
     cv2.imshow("Parking Slot Status", vis_img)
     while True:
         key = cv2.waitKey(0) & 0xFF
-        if key == 27:
+        if key == 27:  # ESC
             break
     cv2.destroyAllWindows()
 
@@ -43,7 +43,7 @@ def process_video(video_path, vehicle_detector, slots):
         vis_img = display_count(vis_img, slot_status)
         cv2.imshow("Parking Slot Status", vis_img)
         key = cv2.waitKey(1) & 0xFF
-        if key == 27:
+        if key == 27:  # ESC
             break
     cap.release()
     cv2.destroyAllWindows()
@@ -51,7 +51,7 @@ def process_video(video_path, vehicle_detector, slots):
 def main():
     parser = argparse.ArgumentParser(description="Parking Slots Identification and Occupancy Tracking")
     parser.add_argument("--input", type=str, required=True, help="Image or video file path")
-    parser.add_argument("--weights", type=str, required=True, help="YOLOv5 weights path")
+    parser.add_argument("--weights", type=str, required=True, help="YOLOv8 weights path")
     parser.add_argument("--select_slots", action='store_true', help="Enter manual slot selection/editor mode")
     args = parser.parse_args()
 
@@ -70,7 +70,7 @@ def main():
         print("No slots found. Run with --select_slots first.")
         return
 
-    vehicle_detector = YOLOv5VehicleDetector(args.weights)
+    vehicle_detector = YOLOv8VehicleDetector(args.weights)
     file_type = get_file_type(args.input)
 
     try:

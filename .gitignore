@@ -24,5 +24,8 @@ notebooks/.ipynb_checkpoints/
 .DS_Store
 Thumbs.db
 
-pickle storage
+# pickle storage
 *.pkl
+
+# modle
+*.pt
