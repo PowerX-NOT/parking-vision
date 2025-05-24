@@ -30,6 +30,7 @@ class SlotSelector:
         print("  - Press 'm' to toggle modify mode (must be ON to add/remove slots)")
         print("  - In modify mode: Click and drag to draw a slot")
         print("  - Double-click inside a slot to delete it")
+        print("  - Press 'c' to clear all slots")
         print("  - Press 's' to save slots, 'ESC' to exit")
         while True:
             img = self.clone.copy()
@@ -53,6 +54,9 @@ class SlotSelector:
             elif key == ord('m'):  # Toggle modify mode
                 self.modifying = not self.modifying
                 print("Modify mode:", "ON" if self.modifying else "OFF")
+            elif key == ord('c'):  # Clear all slots
+                self.slots.clear()
+                print("All slots cleared.")
         cv2.destroyAllWindows()
 
     def mouse_callback(self, event, x, y, flags, param):
