@@ -19,7 +19,11 @@ def process_image(image_path, slot_detector, occupancy_method):
     vis_img = draw_slots(image, slot_status)
     vis_img = display_count(vis_img, slot_status)
     cv2.imshow("Parking Slot Status", vis_img)
-    cv2.waitKey(0)
+    # Wait for ESC (27) to exit
+    while True:
+        key = cv2.waitKey(0) & 0xFF
+        if key == 27:  # ESC key
+            break
     cv2.destroyAllWindows()
 
 def process_video(video_path, slot_detector, occupancy_method):
@@ -34,7 +38,9 @@ def process_video(video_path, slot_detector, occupancy_method):
         vis_img = draw_slots(frame, slot_status)
         vis_img = display_count(vis_img, slot_status)
         cv2.imshow("Parking Slot Status", vis_img)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        # Wait for ESC (27) to exit video loop
+        key = cv2.waitKey(1) & 0xFF
+        if key == 27:  # ESC key
             break
     cap.release()
     cv2.destroyAllWindows()
