@@ -1,23 +1,18 @@
 import torch
-import numpy as np
-from src.config import YOLOV5_WEIGHTS, SLOT_CONF_THRESHOLD, SLOT_IOU_THRESHOLD
 
-class YOLOv5SlotDetector:
-    def __init__(self, weights=YOLOV5_WEIGHTS):
-        # Use cached copy of YOLOv5 unless cache is cleared or YOLOv5 is updated
-        self.model = torch.hub.load(
-            'ultralytics/yolov5',
-            'custom',
-            path=weights,
-            force_reload=False  # Don't re-download unless necessary
-        )
-        self.model.conf = SLOT_CONF_THRESHOLD
-        self.model.iou = SLOT_IOU_THRESHOLD
+class YOLOv5VehicleDetector:
+    def __init__(self, weights, device='cuda'):
+        self.model = torch.hub.load('ultralytics/yolov5', 'custom', path=weights, force_reload=False)
+        self.device = device
+        self.model.to(self.device).eval()
+        # COCO classes for vehicles: car, truck, bus, motorcycle
+        self.vehicle_classes = [2, 3, 5, 7]  # car, motorcycle, bus, truck in COCO
 
-    def detect_slots(self, image):
+    def detect_vehicles(self, image):
         results = self.model(image)
-        slots = []
+        vehicles = []
         for *xyxy, conf, cls in results.xyxy[0].cpu().numpy():
-            x1, y1, x2, y2 = map(int, xyxy)
-            slots.append({'bbox': (x1, y1, x2, y2), 'conf': float(conf), 'class': int(cls)})
-        return slots
+            if int(cls) in self.vehicle_classes:
+                x1, y1, x2, y2 = map(int, xyxy)
+                vehicles.append({'bbox': (x1, y1, x2, y2), 'conf': float(conf), 'class': int(cls)})
+        return vehicles
