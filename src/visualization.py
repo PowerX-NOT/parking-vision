@@ -3,11 +3,12 @@ import cv2
 def draw_slots(image, slot_status):
     img = image.copy()
     for slot in slot_status:
-        x1, y1, x2, y2 = slot['bbox']
-        color = (0, 0, 255) if slot['occupied'] else (0, 255, 0)
-        label = "Occupied" if slot['occupied'] else "Vacant"
-        cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
-        cv2.putText(img, label, (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        if slot['occupied']:
+            x1, y1, x2, y2 = slot['bbox']
+            color = (0, 0, 255)
+            label = ""
+            cv2.rectangle(img, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(img, label, (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
     return img
 
 def display_count(image, slot_status):
