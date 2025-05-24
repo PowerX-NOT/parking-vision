@@ -1,6 +1,8 @@
 import argparse
 import cv2
 import os
+import torch
+import gc
 
 from src.config import YOLOV5_WEIGHTS
 from src.preprocess import resize_image, extract_frames
@@ -44,15 +46,28 @@ def main():
     parser.add_argument("--occupancy_method", type=str, default="intensity", help="Occupancy detection method")
     args = parser.parse_args()
 
+    # ---- GPU MEMORY CLEARING BEFORE ----
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    gc.collect()
+
     file_type = get_file_type(args.input)
     slot_detector = YOLOv5SlotDetector(weights=args.weights)
 
-    if file_type == 'image':
-        process_image(args.input, slot_detector, args.occupancy_method)
-    elif file_type == 'video':
-        process_video(args.input, slot_detector, args.occupancy_method)
-    else:
-        print("Unsupported input file type.")
+    try:
+        if file_type == 'image':
+            process_image(args.input, slot_detector, args.occupancy_method)
+        elif file_type == 'video':
+            process_video(args.input, slot_detector, args.occupancy_method)
+        else:
+            print("Unsupported input file type.")
+    finally:
+        # ---- GPU MEMORY CLEARING AFTER ----
+        del slot_detector
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        print("🧹 GPU memory cleared.")
 
 if __name__ == "__main__":
     main()
