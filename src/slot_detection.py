@@ -1,52 +1,48 @@
 import numpy as np
 
-def detect_vehicles(image, model, conf=0.4):
+def detect_objects_polygons(image, model, conf=0.4):
     """
-    Run YOLO detection and return bounding boxes for vehicles only.
-    Returns: list of rectangles [(x1, y1, x2, y2), ...]
+    Detects objects in the image using the YOLO OBB model.
+    Returns a list of polygons (numpy arrays of shape (4, 2)), one per detected object.
     """
     results = model(image)
-    vehicles = []
-    vehicle_classes = {'car', 'truck', 'bus', 'motorcycle', 'van'}  # adjust as needed
+    polygons = []
     for result in results:
-        names = result.names
-        if getattr(result, "boxes", None) is not None:
-            xyxy = result.boxes.xyxy.cpu().numpy()
-            classes = result.boxes.cls.cpu().numpy().astype(int)
-            confs = result.boxes.conf.cpu().numpy()
-            for i, box in enumerate(xyxy):
-                if confs[i] >= conf and names[classes[i]] in vehicle_classes:
-                    x1, y1, x2, y2 = box.astype(int)
-                    vehicles.append(((x1, y1), (x2, y2)))
-    return vehicles
+        if getattr(result, "obb", None) is not None:
+            obb_polys = result.obb.xyxyxyxy.cpu().numpy()
+            obb_confs = result.obb.conf.cpu().numpy()
+            for i, poly in enumerate(obb_polys):
+                if obb_confs[i] >= conf:
+                    # poly is shape (8,), reshape to (4,2)
+                    polygons.append(poly.reshape((4, 2)))
+    return polygons
 
-def rect_overlap(r1, r2, threshold=0.2):
+def polygon_overlap(poly1, poly2, threshold=0.15):
     """
-    Returns True if r1 and r2 overlap more than threshold IoU.
-    r1, r2: ((x1, y1), (x2, y2))
+    Returns True if poly1 and poly2 overlap more than threshold IoU.
+    Uses cv2.intersectConvexConvex for polygon intersection area.
     """
-    xA = max(r1[0][0], r2[0][0])
-    yA = max(r1[0][1], r2[0][1])
-    xB = min(r1[1][0], r2[1][0])
-    yB = min(r1[1][1], r2[1][1])
-
-    interArea = max(0, xB - xA) * max(0, yB - yA)
-    boxAArea = abs((r1[1][0] - r1[0][0]) * (r1[1][1] - r1[0][1]))
-    boxBArea = abs((r2[1][0] - r2[0][0]) * (r2[1][1] - r2[0][1]))
-
-    if boxAArea == 0 or boxBArea == 0:
+    import cv2
+    poly1 = poly1.astype(np.float32)
+    poly2 = poly2.astype(np.float32)
+    # Calculate intersection area
+    area, _ = cv2.intersectConvexConvex(poly1, poly2)
+    area1 = cv2.contourArea(poly1)
+    area2 = cv2.contourArea(poly2)
+    union = area1 + area2 - area
+    if union == 0:
         return False
-
-    iou = interArea / float(boxAArea + boxBArea - interArea)
+    iou = area / union
     return iou > threshold
 
-def check_slots_occupancy(slots, vehicles):
+def check_slots_occupancy(slots, obb_polygons):
     """
-    For each slot, check if any vehicle overlaps it.
+    For each slot (as polygon), check if any detected object polygon overlaps it.
     Returns: list of True (occupied) or False (vacant)
     """
     statuses = []
     for slot in slots:
-        occupied = any(rect_overlap(slot, veh) for veh in vehicles)
+        slot_poly = np.array([slot[0], (slot[0][0], slot[1][1]), slot[1], (slot[1][0], slot[0][1])], dtype=np.float32)
+        occupied = any(polygon_overlap(slot_poly, obb) for obb in obb_polygons)
         statuses.append(occupied)
     return statuses

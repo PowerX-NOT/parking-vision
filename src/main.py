@@ -2,7 +2,7 @@ import argparse
 import os
 import pickle
 from ultralytics import YOLO
-from src.slot_detection import detect_vehicles, check_slots_occupancy
+from src.slot_detection import detect_objects_polygons, check_slots_occupancy
 from src.visualization import visualize_results
 from src.preprocess import load_image, load_video_frames
 from src.config import MODEL_PATH
@@ -18,9 +18,9 @@ def load_slots(slots_file=SLOTS_FILE):
 
 def process_image(image_path, model, slots):
     image = load_image(image_path)
-    vehicles = detect_vehicles(image, model)
-    statuses = check_slots_occupancy(slots, vehicles)
-    result_img = visualize_results(image, slots, statuses, vehicles)
+    obb_polygons = detect_objects_polygons(image, model)
+    statuses = check_slots_occupancy(slots, obb_polygons)
+    result_img = visualize_results(image, slots, statuses, obb_polygons)
     import cv2
     cv2.imshow("Parking Slot Occupancy", result_img)
     cv2.waitKey(0)
@@ -30,9 +30,9 @@ def process_video(video_path, model, slots):
     frames, fps, width, height = load_video_frames(video_path)
     import cv2
     for frame in frames:
-        vehicles = detect_vehicles(frame, model)
-        statuses = check_slots_occupancy(slots, vehicles)
-        result_frame = visualize_results(frame, slots, statuses, vehicles)
+        obb_polygons = detect_objects_polygons(frame, model)
+        statuses = check_slots_occupancy(slots, obb_polygons)
+        result_frame = visualize_results(frame, slots, statuses, obb_polygons)
         cv2.imshow("Parking Slot Occupancy (Video)", result_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
