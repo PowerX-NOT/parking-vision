@@ -1,0 +1,22 @@
+
+## Implementation Notes
+
+1. **YOLOv5 Integration**: The code assumes you have YOLOv5 properly set up. You may need to:
+   - Clone the YOLOv5 repository
+   - Install its specific requirements
+   - Place your trained model weights in the models folder
+
+2. **Performance Optimization**: For real-time applications, consider:
+   - Implementing frame skipping for video processing
+   - Using GPU acceleration
+   - Optimizing the image preprocessing pipeline
+
+3. **Advanced Features to Add**:
+   - Perspective transformation for angled camera views
+   - Temporal consistency checks for video
+   - Database integration for storing occupancy data
+   - Web interface for remote monitoring
+
+4. **Testing**: Create sample scripts in the `notebooks/` directory to test individual components before integrating them into the main pipeline.
+
+This implementation provides a complete pipeline from input processing to visualization, with flexibility to switch between different detection and classification methods through the configuration file.
