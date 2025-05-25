@@ -1,75 +1,83 @@
 import argparse
-from pathlib import Path
-import gc
-
-try:
-    import torch
-    has_torch = True
-except ImportError:
-    has_torch = False
-
+import os
+import pickle
 from ultralytics import YOLO
-from src.slot_detection import detect_slots
-from src.occupancy import classify_occupancy
+from src.slot_detection import detect_vehicles, check_slots_occupancy
 from src.visualization import visualize_results
 from src.preprocess import load_image, load_video_frames
 from src.config import MODEL_PATH
+from src.slot_selector import select_slots_on_image, SLOTS_FILE
 
-def clear_memory():
-    """Clear Python and CUDA memory."""
-    gc.collect()
-    if has_torch and torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        print("🧹 GPU memory cleared.")
+def load_slots(slots_file=SLOTS_FILE):
+    if os.path.exists(slots_file):
+        with open(slots_file, "rb") as f:
+            return pickle.load(f)
+    else:
+        print("No slots defined. Please run slot selection first.")
+        return []
 
-def process_image(image_path, model):
-    """Process a single image for parking slot detection and occupancy (display only)."""
+def process_image(image_path, model, slots):
     image = load_image(image_path)
-    slots = detect_slots(image, model)
-    statuses = classify_occupancy(image, slots)
-    result_img = visualize_results(image, slots, statuses)
+    vehicles = detect_vehicles(image, model)
+    statuses = check_slots_occupancy(slots, vehicles)
+    result_img = visualize_results(image, slots, statuses, vehicles)
+    import cv2
+    cv2.imshow("Parking Slot Occupancy", result_img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
-    # Display only, do not save
-    from cv2 import imshow, waitKey, destroyAllWindows
-    imshow("Parking Slot Occupancy", result_img)
-    waitKey(0)
-    destroyAllWindows()
-
-def process_video(video_path, model):
-    """
-    Process a video for parking slot detection and occupancy (display only).
-    """
+def process_video(video_path, model, slots):
     frames, fps, width, height = load_video_frames(video_path)
-    from cv2 import imshow, waitKey, destroyAllWindows
-
+    import cv2
     for frame in frames:
-        slots = detect_slots(frame, model)
-        statuses = classify_occupancy(frame, slots)
-        result_frame = visualize_results(frame, slots, statuses)
-        imshow("Parking Slot Occupancy (Video)", result_frame)
-        if waitKey(1) & 0xFF == ord('q'):
+        vehicles = detect_vehicles(frame, model)
+        statuses = check_slots_occupancy(slots, vehicles)
+        result_frame = visualize_results(frame, slots, statuses, vehicles)
+        cv2.imshow("Parking Slot Occupancy (Video)", result_frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-    destroyAllWindows()
+    cv2.destroyAllWindows()
 
 def main():
-    clear_memory()  # Clear memory before execution
+    import gc
+    try:
+        import torch
+        has_torch = True
+    except ImportError:
+        has_torch = False
+
+    def clear_memory():
+        gc.collect()
+        if has_torch and torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            print("🧹 GPU memory cleared.")
+
+    clear_memory()
 
     parser = argparse.ArgumentParser(description="Parking Slot Occupancy Detection (Image/Video)")
     parser.add_argument("--input", type=str, required=True, help="Path to image or video")
+    parser.add_argument("--select_slots", action="store_true", help="Enter manual slot selection mode")
     args = parser.parse_args()
 
-    # Load model
+    if args.select_slots:
+        select_slots_on_image(args.input)
+        return
+
+    slots = load_slots()
+    if not slots:
+        print("No slots loaded. Please mark slots first using --select_slots.")
+        return
+
     model = YOLO(MODEL_PATH)
 
-    # Check if input is image or video
     if args.input.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp')):
-        process_image(args.input, model)
+        process_image(args.input, model, slots)
     elif args.input.lower().endswith(('.mp4', '.avi', '.mov')):
-        process_video(args.input, model)
+        process_video(args.input, model, slots)
     else:
         print("Error: Unsupported file format. Use .jpg/.png or .mp4/.avi")
 
-    clear_memory()  # Clear memory after execution
+    clear_memory()
 
 if __name__ == "__main__":
     main()

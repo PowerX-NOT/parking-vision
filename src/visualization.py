@@ -1,25 +1,25 @@
 import cv2
-import numpy as np
 
-def visualize_results(image, slots, statuses):
+def visualize_results(image, slots, statuses, vehicles=None):
     """
-    Draws colored polygons and counts of occupied/vacant slots.
+    Draws slots, vehicle boxes, and status labels.
     """
     output = image.copy()
     vacant = 0
     occupied = 0
-    for i, polygon in enumerate(slots):
-        pts = polygon.reshape((-1, 1, 2)).astype(int)
-        color = (0, 255, 0) if not statuses[i] else (0, 0, 255)  # Green for vacant, Red for occupied
-        cv2.polylines(output, [pts], isClosed=True, color=color, thickness=2)
+    for i, rect in enumerate(slots):
+        color = (0, 255, 0) if not statuses[i] else (0, 0, 255)
+        cv2.rectangle(output, rect[0], rect[1], color, 2)
         label = "Vacant" if not statuses[i] else "Occupied"
-        cv2.putText(output, label, (int(polygon[0][0]), int(polygon[0][1]) - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        cv2.putText(output, label, (rect[0][0], rect[0][1] - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
         if not statuses[i]:
             vacant += 1
         else:
             occupied += 1
-    # Draw count
+    if vehicles:
+        for veh in vehicles:
+            cv2.rectangle(output, veh[0], veh[1], (255, 255, 0), 2)
     cv2.putText(output, f"Vacant: {vacant}  Occupied: {occupied}", (30, 30),
                 cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
     return output
