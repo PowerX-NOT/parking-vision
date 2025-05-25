@@ -70,6 +70,12 @@ parking-vision/
 └── .gitignore
 ```
 
+## 🎥 Demo
+
+![Demo GIF](https://github.com/PowerX-NOT/parking-vision/blob/242d3c729dc007ea4f569d985664f2af94de6bf8/demo/demo.gif)
+
+![Demo Screenshot](https://github.com/PowerX-NOT/parking-vision/blob/242d3c729dc007ea4f569d985664f2af94de6bf8/demo/demo.png)
+
 ---
 
 ## 🚀 Getting Started
