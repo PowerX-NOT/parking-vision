@@ -5,7 +5,7 @@ def visualize_results(image, slots, statuses, obb_polygons=None):
     """
     Draws colored rectangles for slots (red=occupied, green=vacant) and vehicle polygons.
     If a vehicle polygon overlaps a slot, only the red slot is shown (not the vehicle polygon).
-    Shows only the total, occupied, and vacant counts at the top (no black bar).
+    Returns the main image and a summary counts image for display in a separate window.
     """
     output = image.copy()
     vacant = 0
@@ -48,8 +48,12 @@ def visualize_results(image, slots, statuses, obb_polygons=None):
                 cv2.polylines(output, [veh_pts], isClosed=True, color=(255, 0, 0), thickness=2)
 
     total = len(slots)
-    # Only show summary count at top (no black bar)
-    summary = f"Total: {total}  Vacant: {vacant}  Occupied: {occupied}"
-    cv2.putText(output, summary, (10, 30),
-                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2)
-    return output
+    # Make a simple white rectangle image for the dialog
+    dialog_h = 120
+    dialog_w = 340
+    dialog = np.ones((dialog_h, dialog_w, 3), dtype=np.uint8) * 255
+    cv2.putText(dialog, f"Total: {total}", (10, 35), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,0), 2)
+    cv2.putText(dialog, f"Vacant: {vacant}", (10, 75), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,128,0), 2)
+    cv2.putText(dialog, f"Occupied: {occupied}", (10, 115), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,0,255), 2)
+
+    return output, dialog

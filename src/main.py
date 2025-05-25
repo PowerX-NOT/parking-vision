@@ -20,22 +20,28 @@ def process_image(image_path, model, slots):
     image = load_image(image_path)
     obb_polygons = detect_objects_polygons(image, model)
     statuses = check_slots_occupancy(slots, obb_polygons)
-    result_img = visualize_results(image, slots, statuses, obb_polygons)
+    result_img, dialog_img = visualize_results(image, slots, statuses, obb_polygons)
     import cv2
     cv2.imshow("Parking Slot Occupancy", result_img)
+    cv2.imshow("Slot Summary", dialog_img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
 def process_video(video_path, model, slots):
-    frames, fps, width, height = load_video_frames(video_path)
     import cv2
-    for frame in frames:
+    cap = cv2.VideoCapture(video_path)
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
         obb_polygons = detect_objects_polygons(frame, model)
         statuses = check_slots_occupancy(slots, obb_polygons)
-        result_frame = visualize_results(frame, slots, statuses, obb_polygons)
+        result_frame, dialog_frame = visualize_results(frame, slots, statuses, obb_polygons)
         cv2.imshow("Parking Slot Occupancy (Video)", result_frame)
+        cv2.imshow("Slot Summary", dialog_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+    cap.release()
     cv2.destroyAllWindows()
 
 def main():
