@@ -1,8 +1,8 @@
 
 ## Implementation Notes
 
-1. **YOLOv5 Integration**: The code assumes you have YOLOv5 properly set up. You may need to:
-   - Clone the YOLOv5 repository
+1. **YOLOv5 Integration**: The code assumes you have YOLOv11 properly set up. You may need to:
+   - Clone the YOLOv11 repository
    - Install its specific requirements
    - Place your trained model weights in the models folder
 

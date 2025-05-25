@@ -1,17 +1,17 @@
-# Parking Slots Identification and Occupancy Tracking using Computer Vision
+# 🚗 Parking Slots Identification and Occupancy Tracking using Computer Vision
 
 ## 📌 Objective
 
-To build a computer vision system that detects parking slots and tracks their occupancy status using input from images or video. The system helps parking lot owners know the current availability status in real time.
+To build a computer vision system that detects parking slots and tracks their occupancy status using input from images or videos. This system helps parking lot owners monitor slot availability in real time.
 
 ---
 
 ## ⚙️ Features
 
-- Accepts both image (`.jpg`, `.png`) and video (`.mp4`, `.avi`) as input
-- Detects parking slot locations
-- Classifies slots as **occupied** or **vacant**
-- Displays real-time visualization with colored boxes and slot counts
+- Supports both image (`.jpg`, `.png`) and video (`.mp4`, `.avi`) inputs  
+- Detects parking slot locations  
+- Classifies slots as **occupied** or **vacant**  
+- Displays real-time visualization with colored boxes and slot counts  
 
 ---
 
@@ -19,23 +19,32 @@ To build a computer vision system that detects parking slots and tracks their oc
 
 ### 1. Preprocessing
 
-- Resize input for consistent processing
+- Resize input for consistent processing  
 - Convert video into frames (if applicable)
 
-### 2. Parking Slot Detection
+### 2. Parking Slot Detectiona
 
-- Use classical techniques (e.g., edge detection, perspective correction)
+- Use classical techniques (e.g., edge detection, perspective correction)  
 - Or deep learning-based detection (e.g., YOLOv8 OBB)
 
 ### 3. Occupancy Status Classification
 
-- Detect if each slot is empty or has a car
-- Use pixel intensity difference or trained models
+- Detect vehicles using the object detection model (e.g., YOLOv8 OBB)
+- If a detected vehicle overlaps with a marked slot (using IoU or bounding box intersection), mark the slot as **occupied**
+- If a detected vehicle is not inside any slot, draw the vehicle in **blue**
+
+**Color Codes:**
+- Occupied slots: 🟥 Red  
+- Vacant slots: 🟩 Green  
+- Vehicles not inside any slot: 🔵 Blue
 
 ### 4. Visualization
 
-- Draw green (vacant) and red (occupied) rectangles
-- Display count of occupied/vacant slots
+- Draw **green** rectangles for vacant slots  
+- Draw **red** rectangles for occupied slots  
+- Draw vehicles:
+  - **Red** if overlapping with a slot
+  - **Blue** if not inside any slot  
 
 ---
 
@@ -45,7 +54,7 @@ To build a computer vision system that detects parking slots and tracks their oc
 parking-vision/
 ├── data/                  # Sample images/videos for testing
 ├── models/
-│   └── yolo11l-obb.pt     # Pretrained YOLO OBB model
+│   └── yolo11x-obb.pt     # Pretrained YOLO OBB model
 ├── notebooks/             # Experimentation and prototyping
 ├── src/
 │   ├── __init__.py
@@ -65,38 +74,59 @@ parking-vision/
 
 ## 🚀 Getting Started
 
-1. **Clone the repository**
+### 1. Clone the Repository
 
-   ```sh
-   git clone https://github.com/your-username/parking-vision.git
-   cd parking-vision
-   ```
+```bash
+git clone https://github.com/PowerX-NOT/parking-vision.git
+cd parking-vision
+```
 
-2. **Install dependencies**
+### 2. Install Dependencies
 
-   ```sh
-   pip install -r requirements.txt
-   ```
-
-3. **Download the YOLO OBB model**
-
-   Place `yolo11l-obb.pt` in the `models/` directory.
-
-4. **Run the system**
-
-   ```sh
-   python src/main.py --input data/sample.jpg --output output
-   ```
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
-## 📝 Notes
+## 🎯 Define Parking Slots (Manual Selection)
 
-- The `notebooks/` folder contains sample notebooks for prototyping and experimentation.
-- For your own videos/images, place them in the `data/` directory.
+Run the following command:
+
+```bash
+python -m src.main --input data/sample.jpg --select_slots
+```
+
+### Manual Slot Selection & Editing UI (OpenCV-based):
+
+- **Left-click and drag**: Define a rectangular parking slot  
+- **Double-click inside a slot**: Delete that slot  
+- Press **`s`**: Save current slots to `slots.pkl`  
+- Press **`m`**: Toggle modification mode (add/remove slots)  
+- Press **`c`**: Clear all marked slots  
+
+> ✅ On startup, if `slots.pkl` exists, it will automatically be loaded.
 
 ---
 
-## 📧 Contact
+## ▶️ Run the System
 
-For any questions, open an issue or contact [your-email@example.com](mailto:your-email@example.com).
+### For Image Input:
+
+```bash
+python -m src.main --input data/sample.jpg
+```
+
+### For Video Input:
+
+```bash
+python -m src.main --input data/sample.mp4
+```
+
+---
+
+## 📌 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
