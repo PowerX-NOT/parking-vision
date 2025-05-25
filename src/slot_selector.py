@@ -11,12 +11,14 @@ class SlotSelector:
         self.display = image.copy()
         self.slots_file = slots_file
         self.slots = []
-        self.modification_mode = False
-        self.current_rect = []
+        self.modification_mode = True  # Start with modification enabled
+        self.drawing = False
+        self.rect_start = None
+        self.rect_end = None
         self.selected_idx = None
         self.load_slots()
         self.instructions = (
-            "Left-click: Mark 2 corners | Double-click inside: Delete slot | "
+            "Drag left mouse: Add slot | Double-click inside: Delete slot | "
             "'m': Toggle mode | 's': Save | 'c': Clear | 'q': Quit"
         )
 
@@ -36,14 +38,16 @@ class SlotSelector:
 
     def draw_slots(self):
         self.display = self.image.copy()
+        # Draw persistent slots
         for idx, (pt1, pt2) in enumerate(self.slots):
             color = (0, 255, 0) if idx != self.selected_idx else (0, 0, 255)
             cv2.rectangle(self.display, pt1, pt2, color, 2)
             cx, cy = (pt1[0] + pt2[0]) // 2, (pt1[1] + pt2[1]) // 2
             cv2.putText(self.display, f"{idx+1}", (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
-        for pt in self.current_rect:
-            cv2.circle(self.display, pt, 5, (255, 0, 0), -1)
-        # Instructions
+        # Draw in-progress rectangle if drawing
+        if self.drawing and self.rect_start and self.rect_end:
+            cv2.rectangle(self.display, self.rect_start, self.rect_end, (255, 0, 0), 2)
+        # Draw instructions
         cv2.rectangle(self.display, (0, 0), (self.display.shape[1], 30), (0, 0, 0), -1)
         cv2.putText(self.display, self.instructions, (10, 22), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255,255,255), 1)
 
@@ -64,11 +68,19 @@ class SlotSelector:
         if not self.modification_mode:
             return
         if event == cv2.EVENT_LBUTTONDOWN:
-            if len(self.current_rect) < 2:
-                self.current_rect.append((x, y))
-            if len(self.current_rect) == 2:
-                self.slots.append(tuple(self.current_rect))
-                self.current_rect = []
+            self.drawing = True
+            self.rect_start = (x, y)
+            self.rect_end = (x, y)
+        elif event == cv2.EVENT_MOUSEMOVE and self.drawing:
+            self.rect_end = (x, y)
+        elif event == cv2.EVENT_LBUTTONUP and self.drawing:
+            self.rect_end = (x, y)
+            # Only add if rectangle is of reasonable size
+            if self.rect_start and self.rect_end and (abs(self.rect_start[0]-self.rect_end[0]) > 10 and abs(self.rect_start[1]-self.rect_end[1]) > 10):
+                self.slots.append((self.rect_start, self.rect_end))
+            self.drawing = False
+            self.rect_start = None
+            self.rect_end = None
         elif event == cv2.EVENT_LBUTTONDBLCLK:
             idx = self.find_slot((x, y))
             if idx is not None:
