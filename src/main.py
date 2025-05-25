@@ -21,6 +21,16 @@ def process_image(image_path, model, slots):
     obb_polygons = detect_objects_polygons(image, model)
     statuses = check_slots_occupancy(slots, obb_polygons)
     result_img, dialog_img = visualize_results(image, slots, statuses, obb_polygons)
+
+    # Count stats
+    total = len(slots)
+    occupied = sum(statuses)
+    vacant = total - occupied
+
+    # Save to CSV
+    from src.utils import save_summary_to_csv
+    save_summary_to_csv('parking_summary.csv', total, occupied, vacant)
+
     import cv2
     cv2.imshow("Parking Slot Occupancy", result_img)
     cv2.imshow("Slot Summary", dialog_img)
@@ -30,6 +40,7 @@ def process_image(image_path, model, slots):
 def process_video(video_path, model, slots):
     import cv2
     cap = cv2.VideoCapture(video_path)
+    total, occupied, vacant = 0, 0, 0
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -37,12 +48,17 @@ def process_video(video_path, model, slots):
         obb_polygons = detect_objects_polygons(frame, model)
         statuses = check_slots_occupancy(slots, obb_polygons)
         result_frame, dialog_frame = visualize_results(frame, slots, statuses, obb_polygons)
+        total = len(slots)
+        occupied = sum(statuses)
+        vacant = total - occupied
         cv2.imshow("Parking Slot Occupancy (Video)", result_frame)
         cv2.imshow("Slot Summary", dialog_frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     cap.release()
     cv2.destroyAllWindows()
+    from src.utils import save_summary_to_csv
+    save_summary_to_csv('parking_summary.csv', total, occupied, vacant)
 
 def main():
     import gc
