@@ -15,36 +15,33 @@ To build a computer vision system that detects parking slots and tracks their oc
 
 ---
 
+
 ## 🛠️ System Overview
 
-### 1. Preprocessing
+### 1. Parking Slot Detection
 
-- Resize input for consistent processing  
-- Convert video into frames (if applicable)
+- Utilizes a deep learning-based object detection model **YOLOv11x OBB** to identify and map parking slots.
 
-### 2. Parking Slot Detectiona
+### 2. Occupancy Status Classification
 
-- Use classical techniques (e.g., edge detection, perspective correction)  
-- Or deep learning-based detection (e.g., YOLOv8 OBB)
+- Vehicles are detected using the same object detection model.
+- For each vehicle:
+  - If it overlaps with a marked parking slot (based on IoU or bounding box intersection), the slot is marked as **occupied**.
+  - If the vehicle does **not** fall within any marked slot, it is highlighted in **blue**.
 
-### 3. Occupancy Status Classification
+#### 🎨 Color Code:
 
-- Detect vehicles using the object detection model (e.g., YOLOv8 OBB)
-- If a detected vehicle overlaps with a marked slot (using IoU or bounding box intersection), mark the slot as **occupied**
-- If a detected vehicle is not inside any slot, draw the vehicle in **blue**
+- 🟥 **Red** – Occupied Slots  
+- 🟩 **Green** – Vacant Slots  
+- 🔵 **Blue** – Vehicles not inside any marked slot
 
-**Color Codes:**
-- Occupied slots: 🟥 Red  
-- Vacant slots: 🟩 Green  
-- Vehicles not inside any slot: 🔵 Blue
+### 3. Output Summary
 
-### 4. Visualization
+A summary file (`.csv`) is generated with the following details:
 
-- Draw **green** rectangles for vacant slots  
-- Draw **red** rectangles for occupied slots  
-- Draw vehicles:
-  - **Red** if overlapping with a slot
-  - **Blue** if not inside any slot  
+| Total Slots | Occupied Slots | Available Slots |
+|-------------|----------------|-----------------|
+| 400         | 136            | 264             |
 
 ---
 
@@ -72,9 +69,9 @@ parking-vision/
 
 ## 🎥 Demo
 
-![Demo GIF](https://github.com/PowerX-NOT/parking-vision/blob/242d3c729dc007ea4f569d985664f2af94de6bf8/demo/demo.gif)
-
 ![Demo Screenshot](https://github.com/PowerX-NOT/parking-vision/blob/242d3c729dc007ea4f569d985664f2af94de6bf8/demo/demo.png)
+
+![Demo GIF](https://github.com/PowerX-NOT/parking-vision/blob/242d3c729dc007ea4f569d985664f2af94de6bf8/demo/demo.gif)
 
 ---
 
