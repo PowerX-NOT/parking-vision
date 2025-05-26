@@ -100,15 +100,56 @@ Run the following command:
 python -m src.main --input data/sample.jpg --select_slots
 ```
 
-### Manual Slot Selection & Editing UI (OpenCV-based):
+# Parking Slot Selection & Editing UI (OpenCV-based)
 
-- **Left-click and drag**: Define a rectangular parking slot  
-- **Double-click inside a slot**: Delete that slot  
-- Press **`s`**: Save current slots to `slots.pkl`  
-- Press **`m`**: Toggle modification mode (add/remove slots)  
-- Press **`c`**: Clear all marked slots  
+This tool provides a user-friendly interface to manually or automatically select and edit parking slots using OpenCV.
 
-> ✅ On startup, if `slots.pkl` exists, it will automatically be loaded.
+---
+
+## 🎨 Color Coding
+
+| Color     | Meaning                              |
+|---------  |--------------------------------------|
+| 🔴 Red    | Occupied slots (cars)                |
+| 🟡 Yellow | Saved slots (included in slots list) |
+| 🟣 Purple | Currently selected slot              |
+
+---
+
+## ⌨️ Commands
+
+| Key | Action                                       |
+|-----|----------------------------------------------|
+| `m` | Toggle modification mode                     |
+| `s` | Save all yellow slots to file                |
+| `c` | Clear all slots                              |
+| `d` | Auto Detect parking spaces                   |
+| `r` | Convert all red (occupied) slots to yellow   |
+| `q` | Quit (auto-saves before exit)                |
+
+---
+
+## 📊 Visual Feedback
+
+- Displays **counts** of different slot types
+- Provides **clear status messages**
+- Maintains **visual distinction** between slot states
+
+---
+
+## 📁 Auto Load Feature
+
+> ✅ On startup, if a file named `slots.pkl` exists, it will be **automatically loaded**.
+
+---
+
+## 💾 Dependencies
+
+- Python
+- OpenCV (`cv2`)
+- `pickle` (for saving/loading slots)
+
+---
 
 ---
 
@@ -128,8 +169,8 @@ python -m src.main --input data/sample.mp4
 
 ---
 
-## 📌 License
+## 🚧 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is for educational and prototyping purposes only.
 
 ---
