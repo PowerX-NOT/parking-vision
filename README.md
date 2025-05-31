@@ -92,7 +92,7 @@ pip install -r requirements.txt
 
 ---
 
-## 🎯 Define Parking Slots (Manual Selection)
+## 🎯 Define Parking Slots (Auto / Manual Selection)
 
 Run the following command:
 
@@ -123,6 +123,7 @@ This tool provides a user-friendly interface to manually or automatically select
 | `m` | Toggle modification mode                     |
 | `s` | Save all yellow slots to file                |
 | `c` | Clear all slots                              |
+|`Left-click`| drag to define a rectangle.           |
 | `d` | Auto Detect parking spaces                   |
 | `r` | Convert all red (occupied) slots to yellow   |
 | `q` | Quit (auto-saves before exit)                |
